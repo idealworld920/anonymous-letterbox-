@@ -243,23 +243,32 @@
   };
 
   // ---------- 라우팅 (경로 기반: /, /l/코드, /status) ----------
-  // 앱 내부 히스토리 깊이를 state에 기록 → 첫 화면에서 '뒤로'가 사이트 밖으로 나가지 않게
-  const depth=()=>(history.state&&history.state.d)||0;
-  const nav=p=>{if(location.pathname===p){route();return;}history.pushState({d:depth()+1},'',p);route();};
-  const replace=p=>{history.replaceState({d:depth()},'',p);};
+  // 단계 순서 기준 이동: 닉네임 → 쓰기 → 공유(마지막 편지) → 현황. 브라우저 뒤로가기도 함께 동작.
+  const nav=p=>{if(location.pathname===p){route();return;}history.pushState(null,'',p);route();};
+  const replace=p=>{history.replaceState(null,'',p);};
   window.addEventListener('popstate',route);
-  $('nav-back').onclick=()=>{if(depth()>0)history.back();else nav('/write');};
-  $('nav-fwd').onclick=()=>history.forward();
-  function syncNav(){$('nav-back').disabled=depth()===0&&['/write','/nick'].includes(location.pathname);}
+  const lastCode=()=>LS('lb-last')||(lastLetter&&lastLetter.code)||null;
+  function prevNext(){
+    const path=location.pathname,code=codeFromPath(),last=lastCode();
+    const share=last?'/l/'+last:null;
+    if(path==='/nick')return[null,nick?'/write':null];
+    if(path==='/write')return['/nick',share||'/status'];
+    if(code&&share===path)return['/write','/status'];
+    if(code)return[nick?'/write':'/nick',null]; // 받는 사람 화면
+    if(path==='/status')return[share||'/write',null];
+    return[null,null];
+  }
+  function syncNav(){const[p,n]=prevNext();$('nav-back').disabled=!p;$('nav-fwd').disabled=!n;}
+  $('nav-back').onclick=()=>{const[p]=prevNext();if(p)nav(p);};
+  $('nav-fwd').onclick=()=>{const[,n]=prevNext();if(n)nav(n);};
   async function route(){
-    if(!history.state)history.replaceState({d:0},'',location.pathname);
     syncNav();
     const code=codeFromPath();
     if(code){
       show('v-loading');
       try{
         const L=await api('/api/letters/'+code+'?view=1');
-        if(L.mine){lastLetter=L;openShare(L);return;}
+        if(L.mine){lastLetter=L;LS('lb-last',L.code);syncNav();openShare(L);return;}
         $('read-to').textContent=L.to;$('read-text').textContent=L.text;$('read-nick').textContent=L.nick;
         $('reply-msg').value='';$('reply-cnt').textContent='0';
         if(L.reply){$('reply-form').classList.add('hidden');$('reply-done-text').textContent=L.reply.text;$('reply-done').classList.remove('hidden');}
@@ -271,10 +280,10 @@
     if(location.pathname==='/status'){openStatus();return;}
     if(location.pathname==='/nick'||!nick){
       if(location.pathname!=='/nick')replace('/nick');
-      $('nick-in').value=nick||randNick();show('v-nick');return;
+      syncNav();$('nick-in').value=nick||randNick();show('v-nick');return;
     }
     if(location.pathname!=='/write')replace('/write');
-    openWrite();
+    syncNav();openWrite();
   }
 
   // 1. 닉네임
@@ -292,7 +301,7 @@
     $('send-btn').disabled=true;
     try{
       const r=await api('/api/letters',{method:'POST',body:JSON.stringify({to,text,nick,senderToken:token})});
-      lastLetter={code:r.code,to,text,nick};nav('/l/'+r.code);
+      lastLetter={code:r.code,to,text,nick};LS('lb-last',r.code);nav('/l/'+r.code);
     }catch(e){toast('봉인에 실패했어요 ㅠㅠ 다시 시도해주세요');}
     $('send-btn').disabled=false;
   };
