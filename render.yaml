@@ -12,3 +12,5 @@ services:
         sync: false
       - key: FIRESTORE_DATABASE_ID
         sync: false
+      - key: ADMIN_KEY
+        generateValue: true

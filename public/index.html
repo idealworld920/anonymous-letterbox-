@@ -223,7 +223,7 @@
 
   const $=id=>document.getElementById(id);
   const views=['v-loading','v-nick','v-write','v-share','v-status','v-read','v-404'];
-  function show(id){views.forEach(v=>$(v).classList.toggle('hidden',v!==id));window.scrollTo(0,0);}
+  function show(id){views.forEach(v=>$(v).classList.toggle('hidden',v!==id));window.scrollTo(0,0);if(id==='v-write')writingOn();else writingOff();}
   let toastT;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const baseUrl=()=>location.origin+'/';
@@ -241,6 +241,11 @@
   let nick=LS('lb-nick')||null;
   let lastLetter=null;
 
+  const track=ev=>{fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json','x-sender-token':token},body:JSON.stringify({event:ev}),keepalive:true}).catch(()=>{});};
+  track('visit');
+  let writingTimer=null;
+  function writingOn(){track('writing');clearInterval(writingTimer);writingTimer=setInterval(()=>track('writing'),45000);}
+  function writingOff(){if(writingTimer){clearInterval(writingTimer);writingTimer=null;track('writing_end');}}
   const api=async(url,opt={})=>{
     const r=await fetch(url,{...opt,headers:{'Content-Type':'application/json','x-sender-token':token,...(opt.headers||{})}});
     if(!r.ok)throw new Error('http '+r.status);return r.json();
@@ -297,7 +302,8 @@
 
   // 2. 쓰기
   function openWrite(){$('nick-show').textContent=nick;$('to-in').value='';$('msg').value='';$('cnt').textContent='0';show('v-write');}
-  $('msg').addEventListener('input',()=>$('cnt').textContent=$('msg').value.length);
+  $('msg').addEventListener('input',()=>{$('cnt').textContent=$('msg').value.length;if(!writingTimer)writingOn();});
+  window.addEventListener('pagehide',()=>{if(writingTimer)track('writing_end');});
   $('send-btn').onclick=async()=>{
     const to=$('to-in').value.trim(),text=$('msg').value.trim();
     if(!to){toast('받는 사람을 적어주세요');return;}

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>편지함 관리자 현황</title>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Nanum+Myeongjo:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Gowun Dodum',sans-serif;color:#7a3b4e;min-height:100vh;
+    background:linear-gradient(160deg,#ffe3ea 0%,#ffcfd9 45%,#ffc4d1 100%)}
+  .wrap{max-width:520px;margin:0 auto;padding:36px 18px 60px}
+  h1{font-family:'Nanum Myeongjo',serif;font-size:24px;color:#c2415f;text-align:center}
+  .sub{text-align:center;font-size:13px;color:#a0566a;margin-top:6px}
+  .card{background:rgba(255,255,255,.75);backdrop-filter:blur(10px);border-radius:22px;padding:22px 20px;margin-top:18px;
+    box-shadow:0 10px 40px rgba(255,120,150,.18);border:1px solid rgba(255,255,255,.8)}
+  input{width:100%;border:2px solid #ffd3dd;background:#fff;border-radius:14px;padding:13px;font-size:15px;font-family:inherit;color:#7a3b4e;outline:none}
+  input:focus{border-color:#ff8fab}
+  .btn{display:block;width:100%;margin-top:12px;padding:14px;border:none;border-radius:14px;font-size:16px;font-family:inherit;font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(135deg,#ff8fab,#ff6b8f)}
+  .live{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#1b2340,#2a3560);color:#fff;border-radius:22px;padding:22px 24px;margin-top:18px;box-shadow:0 8px 24px rgba(27,35,64,.3)}
+  .live b{font-size:44px;font-family:'Nanum Myeongjo',serif;color:#ffd98a;line-height:1}
+  .live span{display:block;font-size:13px;color:#d7dcef;margin-top:6px}
+  .dot{width:10px;height:10px;border-radius:50%;background:#7CFF8A;box-shadow:0 0 10px #7CFF8A;animation:blink 1.4s infinite}
+  @keyframes blink{50%{opacity:.3}}
+  .tabs{display:flex;gap:6px;margin-top:18px;background:rgba(255,255,255,.5);padding:5px;border-radius:14px}
+  .tabs button{flex:1;border:none;background:transparent;padding:10px;border-radius:10px;font-family:inherit;font-size:14px;color:#a0566a;cursor:pointer}
+  .tabs button.on{background:#fff;color:#e0577b;font-weight:700;box-shadow:0 2px 8px rgba(255,120,150,.15)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+  .stat{background:#fff;border-radius:18px;padding:18px 14px;text-align:center;box-shadow:0 4px 16px rgba(255,120,150,.1)}
+  .stat b{display:block;font-size:34px;color:#e0577b;font-family:'Nanum Myeongjo',serif;line-height:1.1}
+  .stat span{display:block;font-size:12.5px;color:#b0607a;margin-top:6px}
+  .stat small{display:block;font-size:11px;color:#c58aa0;margin-top:3px}
+  .stat.wide{grid-column:1/-1}
+  .foot{text-align:center;font-size:11.5px;color:#c58aa0;margin-top:16px;line-height:1.7}
+  .foot a{color:#e0577b;text-decoration:none;font-weight:700}
+  .err{color:#e0577b;font-size:13px;text-align:center;margin-top:10px}
+  .hidden{display:none}
+  .funnel{margin-top:12px;background:#fff;border-radius:18px;padding:16px;box-shadow:0 4px 16px rgba(255,120,150,.1)}
+  .funnel h3{font-size:13px;color:#a0566a;margin-bottom:10px}
+  .bar{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:12px;color:#8a4a5e}
+  .bar i{display:block;height:10px;border-radius:5px;background:linear-gradient(90deg,#ff8fab,#ff6b8f);min-width:4px;transition:.4s}
+  .bar em{font-style:normal;width:84px;flex:none}
+  .bar span{width:44px;text-align:right;flex:none;color:#e0577b;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📮 편지함 관리자 현황</h1>
+  <p class="sub">익명의 속마음 편지함 · 운영 대시보드</p>
+
+  <div class="card" id="login">
+    <input id="key" type="password" placeholder="관리자 키 (ADMIN_KEY)">
+    <button class="btn" id="login-btn">들어가기</button>
+    <div class="err hidden" id="login-err"></div>
+  </div>
+
+  <div id="dash" class="hidden">
+    <div class="live"><div><b id="writing">0</b><span>지금 편지 작성 중 (최근 2분)</span></div><div class="dot"></div></div>
+
+    <div class="tabs"><button class="on" data-t="today">오늘</button><button data-t="total">전체</button></div>
+    <div class="grid">
+      <div class="stat"><b id="visitors">0</b><span>방문자 수</span><small id="visits"></small></div>
+      <div class="stat"><b id="letters">0</b><span>편지 보낸 수</span></div>
+      <div class="stat"><b id="reads">0</b><span>편지 읽은 수</span><small>받는 사람이 링크 연 횟수</small></div>
+      <div class="stat"><b id="replies">0</b><span>답장 수</span></div>
+    </div>
+
+    <div class="funnel">
+      <h3>흐름 (선택한 기간 기준)</h3>
+      <div class="bar"><em>방문</em><i id="f1"></i><span id="v1"></span></div>
+      <div class="bar"><em>편지 보냄</em><i id="f2"></i><span id="v2"></span></div>
+      <div class="bar"><em>편지 읽힘</em><i id="f3"></i><span id="v3"></span></div>
+      <div class="bar"><em>답장</em><i id="f4"></i><span id="v4"></span></div>
+    </div>
+
+    <div class="foot">30초마다 자동 갱신 · <span id="when"></span> · 기준일 <span id="day"></span><br><a href="#" id="logout">로그아웃</a> · <a href="/">편지함으로</a></div>
+  </div>
+</div>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(e){return null;}};
+  let key=new URLSearchParams(location.search).get('key')||LS('lb-admin')||'';
+  let period='today',data=null,timer=null;
+  if(new URLSearchParams(location.search).get('key')){history.replaceState(null,'','/admin');}
+
+  async function load(){
+    try{
+      const r=await fetch('/api/admin/stats',{headers:{'x-admin-key':key}});
+      if(r.status===401){throw new Error('키가 틀렸어요');}
+      if(r.status===503){throw new Error('Render 환경변수에 ADMIN_KEY가 아직 없어요');}
+      if(!r.ok)throw new Error('불러오기 실패');
+      data=await r.json();LS('lb-admin',key);
+      $('login').classList.add('hidden');$('dash').classList.remove('hidden');render();
+      if(!timer)timer=setInterval(load,30000);
+    }catch(e){$('login').classList.remove('hidden');$('dash').classList.add('hidden');$('login-err').textContent=e.message;$('login-err').classList.remove('hidden');clearInterval(timer);timer=null;}
+  }
+  function render(){
+    const d=data[period];
+    $('writing').textContent=data.writingNow;
+    $('visitors').textContent=d.visitors;$('visits').textContent='총 방문 '+d.visits+'회';
+    $('letters').textContent=d.letters;$('reads').textContent=d.reads;$('replies').textContent=d.replies;
+    const max=Math.max(d.visitors,d.letters,d.reads,d.replies,1);
+    [['f1','v1',d.visitors],['f2','v2',d.letters],['f3','v3',d.reads],['f4','v4',d.replies]].forEach(([f,v,n])=>{$(f).style.width=(n/max*100)+'%';$(v).textContent=n;});
+    $('when').textContent=new Date(data.serverTime).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+' 기준';
+    $('day').textContent=data.day;
+  }
+  document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');period=b.dataset.t;if(data)render();});
+  $('login-btn').onclick=()=>{key=$('key').value.trim();if(key)load();};
+  $('key').addEventListener('keydown',e=>{if(e.key==='Enter')$('login-btn').click();});
+  $('logout').onclick=e=>{e.preventDefault();LS('lb-admin',null);key='';location.reload();};
+  if(key)load();
+})();
+</script>
+</body>
+</html>

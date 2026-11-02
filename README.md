@@ -16,9 +16,13 @@ npm start        # http://localhost:3000
 2. 환경변수 설정
    - `FIREBASE_SERVICE_ACCOUNT` — 서비스 계정 JSON 전체 (오브이안과 동일한 값 재사용 가능)
    - `FIRESTORE_DATABASE_ID` — 이름 있는 Firestore DB를 쓸 때만 (오브이안 프로젝트: `ai-studio-f51ac51b-bcfa-4234-9f4b-98d33ba7f529`)
+   - `ADMIN_KEY` — 관리자 현황 페이지(`/admin`) 접속 키 (아무 긴 문자열)
 3. 배포 후 `/healthz` 가 `ok` 를 반환하면 완료
 
-Firestore 컬렉션: `letterbox_letters` (현황 조회용 복합 인덱스 `senderToken ASC, createdAt DESC` 가 필요하면 첫 조회 시 로그에 생성 링크가 출력됩니다)
+## 관리자 현황
+`/admin` 에서 `ADMIN_KEY` 입력 → 방문자·편지·읽음·답장 수(오늘/전체), 지금 작성 중인 사람 수. 30초 자동 갱신.
+
+Firestore 컬렉션: `letterbox_letters`, `letterbox_stats`(카운터), `letterbox_visitors`(고유 방문자) (현황 조회용 복합 인덱스 `senderToken ASC, createdAt DESC` 가 필요하면 첫 조회 시 로그에 생성 링크가 출력됩니다)
 
 ## API
 | Method | Path | 설명 |
