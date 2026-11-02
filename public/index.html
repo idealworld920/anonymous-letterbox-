@@ -29,6 +29,9 @@
   h1{word-break:keep-all;font-family:'Nanum Myeongjo',serif;font-size:27px;font-weight:800;color:#c2415f;text-align:center;line-height:1.35;letter-spacing:-.5px}
   .sub{text-align:center;margin-top:10px;font-size:15px;color:#a0566a;line-height:1.6}
   .logo{text-align:center;font-size:44px;margin-bottom:8px;filter:drop-shadow(0 4px 10px rgba(255,100,140,.3))}
+  .topnav{display:flex;justify-content:space-between;margin-bottom:14px}
+  .topnav button{border:none;background:rgba(255,255,255,.7);color:#e0577b;border-radius:20px;padding:7px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(255,120,150,.15)}
+  .topnav button:disabled{opacity:.35;cursor:default}
   .steps{display:flex;justify-content:center;gap:8px;margin-bottom:18px}
   .steps i{width:8px;height:8px;border-radius:50%;background:#ffc4d1;display:block;transition:.3s}
   .steps i.on{width:24px;border-radius:5px;background:#ff6b8f}
@@ -107,6 +110,7 @@
 <body>
 <div class="hearts" id="hearts"></div>
 <div class="wrap">
+  <div class="topnav" id="topnav"><button id="nav-back">‹ 뒤로</button><button id="nav-fwd">앞으로 ›</button></div>
 
   <div id="v-loading" class="card"><div class="spin">편지를 여는 중… 💗</div></div>
 
@@ -134,7 +138,7 @@
     <div class="steps"><i class="on"></i><i class="on"></i><i></i><i></i></div>
     <div class="logo">✉️</div>
     <h1>누구에게 보낼까요?</h1>
-    <p class="sub">보내는 사람: 익명의 <b id="nick-show"></b></p>
+    <p class="sub">보내는 사람: 익명의 <b id="nick-show"></b> <a href="#" id="edit-nick" style="font-size:12px;color:#e0577b;text-decoration:underline;margin-left:4px">바꾸기</a></p>
     <label>받는 사람</label>
     <input id="to-in" maxlength="20" placeholder="예) 민지, 3반 담임쌤, 그 사람">
     <label>편지 내용</label>
@@ -239,9 +243,17 @@
   };
 
   // ---------- 라우팅 (경로 기반: /, /l/코드, /status) ----------
-  const nav=p=>{history.pushState(null,'',p);route();};
+  // 앱 내부 히스토리 깊이를 state에 기록 → 첫 화면에서 '뒤로'가 사이트 밖으로 나가지 않게
+  const depth=()=>(history.state&&history.state.d)||0;
+  const nav=p=>{if(location.pathname===p){route();return;}history.pushState({d:depth()+1},'',p);route();};
+  const replace=p=>{history.replaceState({d:depth()},'',p);};
   window.addEventListener('popstate',route);
+  $('nav-back').onclick=()=>{if(depth()>0)history.back();else nav('/write');};
+  $('nav-fwd').onclick=()=>history.forward();
+  function syncNav(){$('nav-back').disabled=depth()===0&&['/write','/nick'].includes(location.pathname);}
   async function route(){
+    if(!history.state)history.replaceState({d:0},'',location.pathname);
+    syncNav();
     const code=codeFromPath();
     if(code){
       show('v-loading');
@@ -257,13 +269,18 @@
       return;
     }
     if(location.pathname==='/status'){openStatus();return;}
-    if(!nick){$('nick-in').value=randNick();show('v-nick');return;}
+    if(location.pathname==='/nick'||!nick){
+      if(location.pathname!=='/nick')replace('/nick');
+      $('nick-in').value=nick||randNick();show('v-nick');return;
+    }
+    if(location.pathname!=='/write')replace('/write');
     openWrite();
   }
 
   // 1. 닉네임
   $('rand-btn').onclick=()=>{$('nick-in').value=randNick();};
-  $('nick-btn').onclick=()=>{const n=$('nick-in').value.trim();if(!n){toast('닉네임을 정해주세요!');return;}nick=n;LS('lb-nick',n);openWrite();};
+  $('nick-btn').onclick=()=>{const n=$('nick-in').value.trim();if(!n){toast('닉네임을 정해주세요!');return;}nick=n;LS('lb-nick',n);nav('/write');};
+  $('edit-nick').onclick=e=>{e.preventDefault();nav('/nick');};
 
   // 2. 쓰기
   function openWrite(){$('nick-show').textContent=nick;$('to-in').value='';$('msg').value='';$('cnt').textContent='0';show('v-write');}
@@ -324,7 +341,7 @@
     </div>`).join('');
     box.querySelectorAll('button[data-code]').forEach(b=>b.onclick=()=>copy(baseUrl()+'l/'+b.dataset.code));
   }
-  const goNew=e=>{if(e)e.preventDefault();nav('/');};
+  const goNew=e=>{if(e)e.preventDefault();nav(nick?'/write':'/nick');};
   $('new-btn').onclick=goNew;$('me-too-btn').onclick=goNew;$('home-btn').onclick=goNew;$('foot-new').onclick=goNew;
   $('foot-status').onclick=e=>{e.preventDefault();nav('/status');};
 
