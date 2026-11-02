@@ -35,6 +35,7 @@ async function initStore() {
       async get(code) { const s = await col.doc(code).get(); return s.exists ? s.data() : null; },
       async addView(code) { await col.doc(code).update({ views: FieldValue.increment(1), openedAt: Date.now() }); },
       async setReply(code, reply) { await col.doc(code).update({ reply }); },
+      async remove(code) { await col.doc(code).delete(); },
       async bySender(token) {
         const q = await col.where('senderToken', '==', token).orderBy('createdAt', 'desc').limit(100).get();
         return q.docs.map(d => d.data());
@@ -54,6 +55,7 @@ async function initStore() {
     async get(code) { return load()[code] || null; },
     async addView(code) { const d = load(); if (d[code]) { d[code].views = (d[code].views || 0) + 1; d[code].openedAt = Date.now(); save(d); } },
     async setReply(code, reply) { const d = load(); if (d[code]) { d[code].reply = reply; save(d); } },
+    async remove(code) { const d = load(); delete d[code]; save(d); },
     async bySender(t) { return Object.values(load()).filter(l => l.senderToken === t).sort((a, b) => b.createdAt - a.createdAt); },
   };
 }
@@ -126,6 +128,20 @@ app.post('/api/letters/:code/reply', writeLimit, async (req, res) => {
     const reply = { text, createdAt: Date.now() };
     await store.setReply(code, reply);
     res.json({ ok: true, reply });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'server_error' }); }
+});
+
+// 내 편지 삭제 (보낸 사람 본인만)
+app.delete('/api/letters/:code', async (req, res) => {
+  try {
+    const code = String(req.params.code);
+    if (!/^[a-z0-9]{6,12}$/.test(code)) return res.status(404).json({ error: 'not_found' });
+    const L = await store.get(code);
+    if (!L) return res.status(404).json({ error: 'not_found' });
+    const token = req.get('x-sender-token');
+    if (!isToken(token) || token !== L.senderToken) return res.status(403).json({ error: 'forbidden' });
+    await store.remove(code);
+    res.json({ ok: true });
   } catch (e) { console.error(e); res.status(500).json({ error: 'server_error' }); }
 });
 

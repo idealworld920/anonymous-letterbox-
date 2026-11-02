@@ -71,6 +71,10 @@
   .item .foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
   .item time{font-size:11px;color:#c58aa0}
   .item button{border:none;background:#fff0f4;color:#e0577b;border-radius:20px;padding:6px 12px;font-family:inherit;font-size:12px;cursor:pointer}
+  .item .acts{display:flex;gap:6px}
+  .item button.del{background:#fff;color:#c58aa0;border:1px solid #ffd3dd}
+  .item button.del.arm{background:#e0577b;color:#fff;border-color:#e0577b}
+  .item.bye{opacity:0;transform:translateX(30px);transition:.3s}
   .empty{text-align:center;padding:40px 10px;color:#c58aa0;font-size:14px;line-height:1.8}
   .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:#7a3b4e;color:#fff;padding:12px 20px;border-radius:30px;font-size:14px;opacity:0;transition:.3s;z-index:9;pointer-events:none;white-space:nowrap}
   .toast.show{opacity:1;transform:translateX(-50%)}
@@ -346,9 +350,23 @@
     box.innerHTML=list.map(l=>`<div class="item">
       <div class="head"><b>To. ${esc(l.to)}${l.reply?'<span class="badge-reply">답장 💬</span>':''}</b><span class="views ${l.views?'':'zero'}">${l.views?`👀 ${l.views}번 열람`:'아직 안 열림'}</span></div>
       <p>${esc(l.text)}</p>${l.reply?replyHtml(l.reply,l.to):''}
-      <div class="foot"><time>${fmt(l.createdAt)}</time><button data-code="${l.code}">링크 복사</button></div>
+      <div class="foot"><time>${fmt(l.createdAt)}</time><div class="acts"><button data-code="${l.code}">링크 복사</button><button class="del" data-del="${l.code}">삭제</button></div></div>
     </div>`).join('');
     box.querySelectorAll('button[data-code]').forEach(b=>b.onclick=()=>copy(baseUrl()+'l/'+b.dataset.code));
+    // 삭제: 한 번 누르면 '정말 삭제?' → 다시 누르면 삭제 (3초 지나면 취소)
+    box.querySelectorAll('button[data-del]').forEach(b=>{
+      let t;
+      b.onclick=async()=>{
+        if(!b.classList.contains('arm')){b.classList.add('arm');b.textContent='정말 삭제?';t=setTimeout(()=>{b.classList.remove('arm');b.textContent='삭제';},3000);return;}
+        clearTimeout(t);b.disabled=true;
+        try{
+          await api('/api/letters/'+b.dataset.del,{method:'DELETE'});
+          if(LS('lb-last')===b.dataset.del){try{localStorage.removeItem('lb-last');}catch(e){}lastLetter=null;}
+          const item=b.closest('.item');item.classList.add('bye');
+          setTimeout(()=>openStatus(),300);toast('편지를 삭제했어요 🫧');
+        }catch(e){toast('삭제에 실패했어요 ㅠㅠ');b.disabled=false;b.classList.remove('arm');b.textContent='삭제';}
+      };
+    });
   }
   const goNew=e=>{if(e)e.preventDefault();nav(nick?'/write':'/nick');};
   $('new-btn').onclick=goNew;$('me-too-btn').onclick=goNew;$('home-btn').onclick=goNew;$('foot-new').onclick=goNew;
