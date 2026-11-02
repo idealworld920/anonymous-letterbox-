@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>익명의 속마음 편지함</title>
+<meta name="description" content="차마 말하지 못했던 진심을 익명으로 보내세요. 링크 하나로 전해지는 익명 편지.">
+<meta property="og:title" content="익명의 속마음 편지함 💌">
+<meta property="og:description" content="차마 말하지 못했던 진심을 익명으로 보내세요.">
+<meta property="og:type" content="website">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:'Gowun Dodum',sans-serif;color:#7a3b4e;
+    background:linear-gradient(160deg,#ffe3ea 0%,#ffcfd9 45%,#ffc4d1 100%);min-height:100vh;overflow-x:hidden;position:relative}
+  .hearts{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .heart{position:absolute;width:var(--s);height:var(--s);opacity:var(--o);animation:float var(--d) ease-in-out infinite alternate;animation-delay:var(--dl)}
+  .heart::before,.heart::after{content:"";position:absolute;top:0;left:50%;width:50%;height:80%;
+    background:radial-gradient(circle at 30% 30%,#ffd9e2,#ffb6c6);border-radius:50% 50% 0 0;transform-origin:0 100%;transform:rotate(-45deg)}
+  .heart::after{left:0;transform-origin:100% 100%;transform:rotate(45deg)}
+  @keyframes float{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-18px) rotate(3deg)}}
+  .sparkle{position:absolute;width:6px;height:6px;background:#fff;border-radius:50%;box-shadow:0 0 8px 2px #fff;animation:tw 2.4s ease-in-out infinite alternate;animation-delay:var(--dl);opacity:.7}
+  @keyframes tw{from{opacity:.2;transform:scale(.6)}to{opacity:.9;transform:scale(1.2)}}
+
+  .wrap{position:relative;z-index:1;max-width:460px;margin:0 auto;padding:40px 20px 60px;min-height:100vh;display:flex;flex-direction:column}
+  .card{background:rgba(255,255,255,.72);backdrop-filter:blur(10px);border-radius:24px;padding:28px 24px;
+    box-shadow:0 10px 40px rgba(255,120,150,.18);border:1px solid rgba(255,255,255,.8)}
+  h1{font-family:'Nanum Myeongjo',serif;font-size:27px;font-weight:800;color:#c2415f;text-align:center;line-height:1.35;letter-spacing:-.5px}
+  .sub{text-align:center;margin-top:10px;font-size:15px;color:#a0566a;line-height:1.6}
+  .logo{text-align:center;font-size:44px;margin-bottom:8px;filter:drop-shadow(0 4px 10px rgba(255,100,140,.3))}
+  .steps{display:flex;justify-content:center;gap:8px;margin-bottom:18px}
+  .steps i{width:8px;height:8px;border-radius:50%;background:#ffc4d1;display:block;transition:.3s}
+  .steps i.on{width:24px;border-radius:5px;background:#ff6b8f}
+  label{display:block;font-size:13px;color:#a0566a;margin:20px 0 8px}
+  .row{display:flex;gap:8px}
+  .row input{flex:1}
+  .mini{flex:none;padding:0 14px;border:2px solid #ffc4d1;background:#fff;border-radius:14px;color:#e0577b;font-family:inherit;font-size:13px;cursor:pointer}
+  input,textarea{width:100%;border:2px solid #ffd3dd;background:#fff;border-radius:14px;padding:14px;font-size:16px;font-family:inherit;color:#7a3b4e;outline:none;transition:.2s}
+  input:focus,textarea:focus{border-color:#ff8fab;box-shadow:0 0 0 4px rgba(255,143,171,.2)}
+  textarea{min-height:170px;resize:vertical;line-height:1.7}
+  .btn{display:block;width:100%;margin-top:14px;padding:16px;border:none;border-radius:16px;font-size:17px;font-family:inherit;font-weight:700;color:#fff;cursor:pointer;
+    background:linear-gradient(135deg,#ff8fab,#ff6b8f);box-shadow:0 8px 22px rgba(255,107,143,.4);transition:.15s;text-align:center;text-decoration:none}
+  .btn:active{transform:scale(.98)}
+  .btn:disabled{opacity:.6;cursor:default}
+  .btn.ghost{background:#fff;color:#e0577b;box-shadow:none;border:2px solid #ffc4d1}
+  .link-box{margin-top:18px;background:#fff0f4;border:1.5px dashed #ffafc3;border-radius:14px;padding:12px 14px;font-size:13px;word-break:break-all;color:#b0607a}
+  .counter{font-size:12px;color:#c58aa0;text-align:right;margin-top:6px}
+  .stat{display:flex;gap:10px;margin-top:18px}
+  .stat div{flex:1;background:#fff;border-radius:16px;padding:14px;text-align:center}
+  .stat b{display:block;font-size:26px;color:#e0577b;font-family:'Nanum Myeongjo',serif}
+  .stat span{font-size:12px;color:#b0607a}
+  /* 편지지 */
+  .paper{margin-top:18px;background:#fffafb;border-radius:18px;padding:26px 22px;position:relative;box-shadow:0 6px 24px rgba(255,120,150,.15);
+    background-image:repeating-linear-gradient(transparent 0 31px,#ffe3ea 31px 32px);line-height:32px}
+  .paper .to{font-family:'Nanum Myeongjo',serif;font-weight:700;font-size:17px;color:#c2415f}
+  .paper p{white-space:pre-wrap;font-size:15.5px;margin-top:8px}
+  .paper .from{text-align:right;margin-top:14px;font-size:13px;color:#b0607a}
+  .paper::before{content:"💌";position:absolute;top:-12px;right:16px;font-size:26px}
+  /* 현황 목록 */
+  .item{background:#fff;border-radius:18px;padding:16px 16px 12px;margin-top:12px;box-shadow:0 4px 16px rgba(255,120,150,.12);animation:pop .4s ease}
+  @keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .item .head{display:flex;justify-content:space-between;align-items:center;font-size:14px}
+  .item .head b{color:#c2415f}
+  .item .views{font-size:12px;color:#fff;background:#ff8fab;padding:3px 10px;border-radius:20px}
+  .item .views.zero{background:#ffd3dd;color:#b0607a}
+  .item p{font-size:13.5px;color:#8a4a5e;margin-top:8px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .item .foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+  .item time{font-size:11px;color:#c58aa0}
+  .item button{border:none;background:#fff0f4;color:#e0577b;border-radius:20px;padding:6px 12px;font-family:inherit;font-size:12px;cursor:pointer}
+  .empty{text-align:center;padding:40px 10px;color:#c58aa0;font-size:14px;line-height:1.8}
+  .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:#7a3b4e;color:#fff;padding:12px 20px;border-radius:30px;font-size:14px;opacity:0;transition:.3s;z-index:9;pointer-events:none;white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%)}
+  .note{margin-top:20px;font-size:12px;color:#c58aa0;text-align:center;line-height:1.6}
+  .hidden{display:none !important}
+  .spin{text-align:center;padding:50px;color:#c58aa0}
+  .footer{margin-top:auto;padding-top:30px;text-align:center;font-size:12px;color:#d08aa2}
+  .footer a{color:#e0577b;text-decoration:none;font-weight:700;margin:0 6px}
+  .done{text-align:center;padding:6px 0}
+  .done .big{font-size:60px;animation:beat 1s ease-in-out infinite}
+  @keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+  /* 오브이안 배너 */
+  .ad{display:flex;align-items:center;gap:14px;margin-top:22px;padding:16px 18px;border-radius:18px;text-decoration:none;
+    background:linear-gradient(135deg,#1b2340,#2a3560);color:#fff;box-shadow:0 8px 24px rgba(27,35,64,.3);position:relative;overflow:hidden;transition:.15s}
+  .ad:active{transform:scale(.98)}
+  .ad::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,#ffb347 0%,rgba(255,179,71,.15) 60%,transparent 70%);filter:blur(4px)}
+  .ad .orb{width:46px;height:46px;border-radius:50%;flex:none;background:radial-gradient(circle at 35% 35%,#ffd98a,#ff9f1c 55%,#c76b00);box-shadow:0 0 18px rgba(255,170,60,.7);animation:glow 2.2s ease-in-out infinite alternate}
+  @keyframes glow{from{box-shadow:0 0 12px rgba(255,170,60,.5)}to{box-shadow:0 0 26px rgba(255,190,80,.95)}}
+  .ad b{display:block;font-size:15px;color:#ffd98a;margin-bottom:3px}
+  .ad span{font-size:12.5px;color:#d7dcef;line-height:1.5;display:block}
+  .ad em{font-style:normal;font-size:10px;color:#8e97b8;position:absolute;top:8px;right:12px;letter-spacing:.5px}
+</style>
+</head>
+<body>
+<div class="hearts" id="hearts"></div>
+<div class="wrap">
+
+  <div id="v-loading" class="card"><div class="spin">편지를 여는 중… 💗</div></div>
+
+  <div id="v-signin" class="card hidden">
+    <div class="logo">💌</div>
+    <h1>익명의 속마음 편지함</h1>
+    <p class="sub">편지를 보내거나 읽으려면<br>로그인이 필요해요. 로그인 후 다시 열어주세요 🙏</p>
+  </div>
+
+  <!-- 1. 닉네임 -->
+  <div id="v-nick" class="card hidden">
+    <div class="steps"><i class="on"></i><i></i><i></i><i></i></div>
+    <div class="logo">💌</div>
+    <h1>익명의 속마음 편지함</h1>
+    <p class="sub">차마 말하지 못했던 진심을<br>익명으로 보내세요.</p>
+    <label>익명 닉네임 (진짜 이름 말고요!)</label>
+    <div class="row"><input id="nick-in" maxlength="12" placeholder="예) 조용한 고양이"><button class="mini" id="rand-btn">🎲 랜덤</button></div>
+    <button class="btn" id="nick-btn">이 닉네임으로 시작하기 💗</button>
+    <p class="note">받는 사람에게는 "익명의 ○○"로만 보여요.</p>
+  </div>
+
+  <!-- 2. 편지 쓰기 -->
+  <div id="v-write" class="card hidden">
+    <div class="steps"><i class="on"></i><i class="on"></i><i></i><i></i></div>
+    <div class="logo">✉️</div>
+    <h1>누구에게 보낼까요?</h1>
+    <p class="sub">보내는 사람: 익명의 <b id="nick-show"></b></p>
+    <label>받는 사람</label>
+    <input id="to-in" maxlength="20" placeholder="예) 민지, 3반 담임쌤, 그 사람">
+    <label>편지 내용</label>
+    <textarea id="msg" maxlength="500" placeholder="사실은… 늘 고마웠어."></textarea>
+    <div class="counter"><span id="cnt">0</span>/500</div>
+    <button class="btn" id="send-btn">편지 봉인하고 링크 만들기 💌</button>
+  </div>
+
+  <!-- 3. 링크 공유 -->
+  <div id="v-share" class="card hidden">
+    <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+    <div class="done"><div class="big">💗</div><h1>편지가 봉인됐어요!</h1>
+      <p class="sub"><b id="share-to"></b>님에게 이 링크를 전해주세요.<br>누가 보냈는지는 아무도 몰라요.</p></div>
+    <div class="link-box" id="share-link"></div>
+    <button class="btn" id="copy-btn">링크 복사하기 🔗</button>
+    <a class="btn ghost" id="x-share" target="_blank" rel="noopener">X에 공유하기</a>
+    <button class="btn ghost" id="to-status-btn">전송·공유 현황 보기 📊</button>
+    <a class="ad" href="https://orb-ean.onrender.com/" target="_blank" rel="noopener"><em>AD</em><div class="orb"></div><div><b>오브이안 Orb-Ean</b><span>편지로도 못 한 마음이 남았다면,<br>AI 친구 ORA에게 들려주세요 →</span></div></a>
+  </div>
+
+  <!-- 4. 현황 -->
+  <div id="v-status" class="card hidden">
+    <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+    <div class="logo">📮</div>
+    <h1>익명의 <span id="status-nick"></span>의<br>전송·공유 현황</h1>
+    <div class="stat">
+      <div><b id="s-sent">0</b><span>보낸 편지</span></div>
+      <div><b id="s-opened">0</b><span>열어본 편지</span></div>
+      <div><b id="s-views">0</b><span>총 열람</span></div>
+    </div>
+    <div id="items"></div>
+    <button class="btn" id="new-btn">새 편지 쓰기 ✍️</button>
+    <a class="ad" href="https://orb-ean.onrender.com/" target="_blank" rel="noopener"><em>AD</em><div class="orb"></div><div><b>오브이안 Orb-Ean</b><span>편지로도 못 한 마음, 여기서 털어놓아요.<br>당신의 감정을 들어주는 AI 창구 →</span></div></a>
+  </div>
+
+  <!-- 받는 사람: 편지 읽기 -->
+  <div id="v-read" class="card hidden">
+    <div class="logo">💌</div>
+    <h1>당신에게 익명의 편지가<br>도착했어요</h1>
+    <div class="paper">
+      <div class="to"><span id="read-to"></span>에게,</div>
+      <p id="read-text"></p>
+      <div class="from">— 익명의 <span id="read-nick"></span> 드림</div>
+    </div>
+    <p class="note">누가 보냈는지는 보낸 사람만 알아요 🤫</p>
+    <button class="btn" id="me-too-btn">나도 익명 편지 쓰기 ✨</button>
+    <a class="ad" href="https://orb-ean.onrender.com/" target="_blank" rel="noopener"><em>AD</em><div class="orb"></div><div><b>오브이안 Orb-Ean</b><span>답장 대신, 지금 마음을 누군가에게 말하고 싶다면<br>AI 친구 ORA가 들어줄게요 →</span></div></a>
+  </div>
+
+  <div id="v-404" class="card hidden">
+    <div class="logo">🫧</div>
+    <h1>편지를 찾을 수 없어요</h1>
+    <p class="sub">링크가 잘못됐거나 삭제된 편지예요.</p>
+    <button class="btn" id="home-btn">나도 익명 편지 쓰기</button>
+  </div>
+
+  <div class="footer">익명의 속마음 편지함 · <a href="#" id="foot-new">새 편지</a>·<a href="#" id="foot-status">현황</a></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const H=document.getElementById('hearts');
+  for(let i=0;i<22;i++){const h=document.createElement('div');h.className='heart';const s=30+Math.random()*120;
+    h.style.cssText=`--s:${s}px;--o:${.25+Math.random()*.45};--d:${3+Math.random()*4}s;--dl:-${Math.random()*5}s;left:${Math.random()*100}%;top:${Math.random()*100}%`;H.appendChild(h);}
+  for(let i=0;i<18;i++){const s=document.createElement('div');s.className='sparkle';
+    s.style.cssText=`--dl:-${Math.random()*3}s;left:${Math.random()*100}%;top:${Math.random()*100}%`;H.appendChild(s);}
+
+  const $=id=>document.getElementById(id);
+  const views=['v-loading','v-nick','v-write','v-share','v-status','v-read','v-404'];
+  function show(id){views.forEach(v=>$(v).classList.toggle('hidden',v!==id));window.scrollTo(0,0);}
+  let toastT;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
+  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const baseUrl=()=>location.origin+'/';
+  const fmt=ts=>{const d=new Date(ts);return `${d.getMonth()+1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;};
+  const codeFromPath=()=>{const m=location.pathname.match(/^\/l\/([a-z0-9]+)$/);return m?m[1]:null;};
+
+  const ADJ=['조용한','수줍은','용감한','몽글몽글','새벽의','반짝이는','느긋한','따뜻한','비 오는 날의','달빛 아래'];
+  const NOUN=['고양이','토끼','펭귄','수달','구름','별똥별','복숭아','고래','민들레','우체부'];
+  const randNick=()=>ADJ[Math.floor(Math.random()*ADJ.length)]+' '+NOUN[Math.floor(Math.random()*NOUN.length)];
+
+  // ---------- 로컬 신원 (닉네임 + 보낸이 토큰) ----------
+  const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){return null;}};
+  let token=LS('lb-token');
+  if(!token){token=(crypto.randomUUID?crypto.randomUUID():Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join(''));LS('lb-token',token);}
+  let nick=LS('lb-nick')||null;
+  let lastLetter=null;
+
+  const api=async(url,opt={})=>{
+    const r=await fetch(url,{...opt,headers:{'Content-Type':'application/json','x-sender-token':token,...(opt.headers||{})}});
+    if(!r.ok)throw new Error('http '+r.status);return r.json();
+  };
+
+  // ---------- 라우팅 (경로 기반: /, /l/코드, /status) ----------
+  const nav=p=>{history.pushState(null,'',p);route();};
+  window.addEventListener('popstate',route);
+  async function route(){
+    const code=codeFromPath();
+    if(code){
+      show('v-loading');
+      try{
+        const L=await api('/api/letters/'+code+'?view=1');
+        if(L.mine){lastLetter=L;openShare(L);return;}
+        $('read-to').textContent=L.to;$('read-text').textContent=L.text;$('read-nick').textContent=L.nick;
+        show('v-read');
+      }catch(e){show('v-404');}
+      return;
+    }
+    if(location.pathname==='/status'){openStatus();return;}
+    if(!nick){$('nick-in').value=randNick();show('v-nick');return;}
+    openWrite();
+  }
+
+  // 1. 닉네임
+  $('rand-btn').onclick=()=>{$('nick-in').value=randNick();};
+  $('nick-btn').onclick=()=>{const n=$('nick-in').value.trim();if(!n){toast('닉네임을 정해주세요!');return;}nick=n;LS('lb-nick',n);openWrite();};
+
+  // 2. 쓰기
+  function openWrite(){$('nick-show').textContent=nick;$('to-in').value='';$('msg').value='';$('cnt').textContent='0';show('v-write');}
+  $('msg').addEventListener('input',()=>$('cnt').textContent=$('msg').value.length);
+  $('send-btn').onclick=async()=>{
+    const to=$('to-in').value.trim(),text=$('msg').value.trim();
+    if(!to){toast('받는 사람을 적어주세요');return;}
+    if(text.length<2){toast('조금만 더 적어주세요 ✍️');return;}
+    $('send-btn').disabled=true;
+    try{
+      const r=await api('/api/letters',{method:'POST',body:JSON.stringify({to,text,nick,senderToken:token})});
+      lastLetter={code:r.code,to,text,nick};nav('/l/'+r.code);
+    }catch(e){toast('봉인에 실패했어요 ㅠㅠ 다시 시도해주세요');}
+    $('send-btn').disabled=false;
+  };
+
+  // 3. 공유
+  function openShare(L){
+    const link=baseUrl()+'l/'+L.code;
+    $('share-to').textContent=L.to;$('share-link').textContent=link;
+    $('x-share').href='https://twitter.com/intent/tweet?text='+encodeURIComponent(`${L.to}에게, 차마 말 못했던 진심을 익명으로 보냈어 💌 열어봐줘\n`)+'&url='+encodeURIComponent(link);
+    show('v-share');
+  }
+  async function copy(text){
+    try{await navigator.clipboard.writeText(text);toast('링크가 복사됐어요! 💗');}
+    catch(e){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('링크가 복사됐어요! 💗');}catch(_){toast('링크를 길게 눌러 복사해주세요');}ta.remove();}
+  }
+  $('copy-btn').onclick=()=>copy($('share-link').textContent);
+  $('to-status-btn').onclick=()=>nav('/status');
+
+  // 4. 현황
+  async function openStatus(){
+    $('status-nick').textContent=nick||'???';show('v-status');
+    try{const r=await api('/api/status');renderItems(r.letters||[]);}catch(e){renderItems([]);toast('현황을 불러오지 못했어요');}
+  }
+  function renderItems(list){
+    $('s-sent').textContent=list.length;
+    $('s-opened').textContent=list.filter(l=>(l.views||0)>0).length;
+    $('s-views').textContent=list.reduce((a,l)=>a+(l.views||0),0);
+    const box=$('items');
+    if(!list.length){box.innerHTML='<div class="empty">아직 보낸 편지가 없어요 🫧<br>첫 번째 진심을 띄워볼까요?</div>';return;}
+    box.innerHTML=list.map(l=>`<div class="item">
+      <div class="head"><b>To. ${esc(l.to)}</b><span class="views ${l.views?'':'zero'}">${l.views?`👀 ${l.views}번 열람`:'아직 안 열림'}</span></div>
+      <p>${esc(l.text)}</p>
+      <div class="foot"><time>${fmt(l.createdAt)}</time><button data-code="${l.code}">링크 복사</button></div>
+    </div>`).join('');
+    box.querySelectorAll('button[data-code]').forEach(b=>b.onclick=()=>copy(baseUrl()+'l/'+b.dataset.code));
+  }
+  const goNew=e=>{if(e)e.preventDefault();nav('/');};
+  $('new-btn').onclick=goNew;$('me-too-btn').onclick=goNew;$('home-btn').onclick=goNew;$('foot-new').onclick=goNew;
+  $('foot-status').onclick=e=>{e.preventDefault();nav('/status');};
+
+  route();
+})();
+</script>
+</body>
+</html>

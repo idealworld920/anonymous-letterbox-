@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: anonymous-letterbox
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: FIREBASE_SERVICE_ACCOUNT
+        sync: false
+      - key: FIRESTORE_DATABASE_ID
+        sync: false

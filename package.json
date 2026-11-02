@@ -1,0 +1,18 @@
+{
+  "name": "anonymous-letterbox",
+  "version": "1.0.0",
+  "description": "익명의 속마음 편지함 — 차마 말하지 못했던 진심을 익명으로 보내세요",
+  "main": "server.js",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "firebase-admin": "^13.0.0",
+    "helmet": "^8.0.0",
+    "express-rate-limit": "^7.5.0"
+  }
+}
