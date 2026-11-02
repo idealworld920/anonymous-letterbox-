@@ -34,6 +34,7 @@ async function initStore() {
       async create(letter) { await col.doc(letter.code).set(letter); },
       async get(code) { const s = await col.doc(code).get(); return s.exists ? s.data() : null; },
       async addView(code) { await col.doc(code).update({ views: FieldValue.increment(1), openedAt: Date.now() }); },
+      async setReply(code, reply) { await col.doc(code).update({ reply }); },
       async bySender(token) {
         const q = await col.where('senderToken', '==', token).orderBy('createdAt', 'desc').limit(100).get();
         return q.docs.map(d => d.data());
@@ -52,6 +53,7 @@ async function initStore() {
     async create(l) { const d = load(); d[l.code] = l; save(d); },
     async get(code) { return load()[code] || null; },
     async addView(code) { const d = load(); if (d[code]) { d[code].views = (d[code].views || 0) + 1; d[code].openedAt = Date.now(); save(d); } },
+    async setReply(code, reply) { const d = load(); if (d[code]) { d[code].reply = reply; save(d); } },
     async bySender(t) { return Object.values(load()).filter(l => l.senderToken === t).sort((a, b) => b.createdAt - a.createdAt); },
   };
 }
@@ -105,7 +107,25 @@ app.get('/api/letters/:code', async (req, res) => {
     const token = req.get('x-sender-token');
     const mine = isToken(token) && token === L.senderToken;
     if (!mine && req.query.view === '1') await store.addView(code).catch(() => {});
-    res.json({ code: L.code, to: L.to, text: L.text, nick: L.nick, createdAt: L.createdAt, mine });
+    res.json({ code: L.code, to: L.to, text: L.text, nick: L.nick, createdAt: L.createdAt, mine, reply: L.reply || null });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'server_error' }); }
+});
+
+// 받는 사람의 익명 답장 (편지당 1통, 보낸 사람 본인은 불가)
+app.post('/api/letters/:code/reply', writeLimit, async (req, res) => {
+  try {
+    const code = String(req.params.code);
+    if (!/^[a-z0-9]{6,12}$/.test(code)) return res.status(404).json({ error: 'not_found' });
+    const L = await store.get(code);
+    if (!L) return res.status(404).json({ error: 'not_found' });
+    const token = req.get('x-sender-token');
+    if (isToken(token) && token === L.senderToken) return res.status(403).json({ error: 'own_letter' });
+    if (L.reply) return res.status(409).json({ error: 'already_replied' });
+    const text = clean(req.body?.text, 300);
+    if (text.length < 2) return res.status(400).json({ error: 'bad_request' });
+    const reply = { text, createdAt: Date.now() };
+    await store.setReply(code, reply);
+    res.json({ ok: true, reply });
   } catch (e) { console.error(e); res.status(500).json({ error: 'server_error' }); }
 });
 
@@ -115,7 +135,7 @@ app.get('/api/status', async (req, res) => {
     const token = req.get('x-sender-token');
     if (!isToken(token)) return res.status(400).json({ error: 'bad_request' });
     const list = await store.bySender(token);
-    res.json({ letters: list.map(l => ({ code: l.code, to: l.to, text: l.text, nick: l.nick, createdAt: l.createdAt, views: l.views || 0, openedAt: l.openedAt || null })) });
+    res.json({ letters: list.map(l => ({ code: l.code, to: l.to, text: l.text, nick: l.nick, createdAt: l.createdAt, views: l.views || 0, openedAt: l.openedAt || null, reply: l.reply || null })) });
   } catch (e) { console.error(e); res.status(500).json({ error: 'server_error' }); }
 });
 

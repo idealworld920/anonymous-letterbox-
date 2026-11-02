@@ -25,4 +25,5 @@ Firestore 컬렉션: `letterbox_letters` (현황 조회용 복합 인덱스 `sen
 |---|---|---|
 | POST | `/api/letters` | 편지 봉인 `{to,text,nick,senderToken}` → `{code}` |
 | GET | `/api/letters/:code?view=1` | 편지 읽기 (보낸이 본인이면 열람수 미증가) |
+| POST | `/api/letters/:code/reply` | 받는 사람의 익명 답장 `{text}` (편지당 1통) |
 | GET | `/api/status` | 내가 보낸 편지 현황 (`x-sender-token` 헤더) |
